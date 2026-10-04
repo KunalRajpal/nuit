@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="color-scheme" content="dark">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Nuit Blanche 2026: our route</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,16 +13,10 @@
   --bg:#141833; --panel:#1d2247; --line:#2d3466; --ink:#eceaf6; --muted:#a3a7cb;
   --gold:#f4b445; --lilac:#b9a6ff; --dim:#6b729e; --street:#343c74; --route:#f4b445; --subway:#b9a6ff;
   --pinText:#141833;
+  color-scheme:dark;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#f2f1f8; --panel:#ffffff; --line:#dcdaea; --ink:#1a1d3b; --muted:#5d6188;
-    --gold:#c47f08; --lilac:#6b52d6; --dim:#9a9dbb; --street:#d6d4e6; --route:#c47f08; --subway:#6b52d6;
-    --pinText:#ffffff;
-  }
 }
 :root[data-theme="dark"]{
   --bg:#141833; --panel:#1d2247; --line:#2d3466; --ink:#eceaf6; --muted:#a3a7cb;
@@ -82,10 +77,15 @@ svg .mark{fill:var(--ink);font-size:10px;font-weight:600}
 .group .sync.off::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#e2685f;margin-right:6px}
 .stop .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:8px}
 .stop .row label{margin-top:0}
+.stop .gmap{font-size:.85rem;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:4px 12px;text-decoration:none;min-height:32px;display:inline-flex;align-items:center}
 .stop .who{font-size:.82rem;color:var(--muted)}
 .stop.is-here{box-shadow:inset 3px 0 0 var(--gold)}
 svg .pin.here circle{stroke:var(--ink);stroke-width:3.5}
 .namebtn{padding:2px 10px;min-height:28px}
+svg .me .dot{fill:#3d8bff;stroke:#fff;stroke-width:2.5}
+svg .me .halo{fill:#3d8bff;opacity:.28;transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion: no-preference){svg .me .halo{animation:pulse 2s ease-out infinite}}
+@keyframes pulse{0%{transform:scale(.5);opacity:.5}100%{transform:scale(1.6);opacity:0}}
 footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:16px}
 footer button{font:inherit;background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 14px;cursor:pointer;margin-top:10px}
 :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -110,6 +110,7 @@ footer button{font:inherit;background:none;border:1px solid var(--line);color:va
 <section class="note group" aria-label="Group status">
   <div><b>We're at:</b> <span id="hereText">Nobody has checked in yet.</span></div>
   <div><b>Meetup spot:</b> <span id="meetText">Not set.</span> <button type="button" id="setMeet">Set</button></div>
+  <div><b>Where am I:</b> <span id="locText">Tap to put yourself on the maps.</span> <button type="button" id="locBtn">Show me</button></div>
   <div class="sync off" id="sync">Connecting to the group…</div>
 </section>
 
@@ -174,11 +175,16 @@ const STOPS=[
  {n:"53",t:1,leg:6,name:"Killim",by:"Roda Medhat",where:"95 Fort York Blvd, with Night Waves (B) at Bobber Plaza",what:"",ov:[66,410]}
 ];
 
+const NPS="Nathan Phillips Square, Toronto",CH="Toronto City Hall, 100 Queen St W, Toronto",OCH="Old City Hall, 60 Queen St W, Toronto",HT="Church of the Holy Trinity, 10 Trinity Square, Toronto";
+const GQ={"02":"123 Queen St W, Toronto","01":"Osgoode Hall, 130 Queen St W, Toronto","05":NPS,"04":NPS,"07":NPS,"06":NPS,"03":CH,"09":CH,"08":"Bay St & Albert St, Toronto",
+"14":OCH,"15":OCH,"13":OCH,"16":OCH,"12":OCH,"41":OCH,"40":OCH,"17":OCH,"18":"24 Trinity Square, Toronto","19":HT,"20":HT,
+"72":"CN Tower, 290 Bremner Blvd, Toronto","31":"45 Fort York Blvd, Toronto","54":"55 Fort York Blvd, Toronto","53":"95 Fort York Blvd, Toronto"};
+const gmap=n=>"https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+encodeURIComponent(GQ[n]||"Nathan Phillips Square, Toronto");
 const TOPIC="nb26-94760942652f";
 const API="https://ntfy.sh/"+TOPIC;
 const color=t=>t===3?"var(--gold)":t===2?"var(--lilac)":"var(--dim)";
 const NS="http://www.w3.org/2000/svg";
-function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;parent&&parent.appendChild(e);return e}
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);let st="";for(const k in attrs){const v=String(attrs[k]);if((k==="fill"||k==="stroke")&&v.includes("var("))st+=k+":"+v+";";else e.setAttribute(k,v)}if(st)e.setAttribute("style",st);if(text!=null)e.textContent=text;parent&&parent.appendChild(e);return e}
 const nameOf=n=>{const s=STOPS.find(x=>x.n===n);return s?n+" "+s.name:n};
 
 /* Shared state, rebuilt from the group's message log */
@@ -242,23 +248,23 @@ function ago(at){const m=Math.max(0,Math.round((Date.now()/1000-at)/60));return 
 /* Overview map */
 (function(){
  const s=document.getElementById("ovStreets"),r=document.getElementById("ovRoute"),p=document.getElementById("ovPins");
- const H=[["Dundas",40,20,385],["Queen",150,20,385],["King",230,20,385],["Front",300,20,385],["Bremner",360,60,260]];
- H.forEach(([n,y,x1,x2])=>{el("line",{x1,y1:y,x2,y2:y,class:"street"},s);el("text",{x:x2-2,y:y-7,class:"sname","text-anchor":"end"},s,n)});
+ const H=[["Dundas",30,20,385],["Queen",150,20,385],["King",230,20,385],["Front",300,20,385],["Bremner",360,60,260]];
+ H.forEach(([n,y,x1,x2])=>{el("line",{x1,y1:y,x2,y2:y,class:"street"},s);el("text",n==="Bremner"?{x:168,y:376,class:"sname"}:{x:66,y:y-7,class:"sname"},s,n)});
  el("path",{d:"M10 430 L60 404 L110 368 L140 360",class:"street minor"},s);
- el("text",{x:16,y:446,class:"sname"},s,"Fort York Blvd");
- const V=[["Spadina",60,20,440],["University",200,20,300],["York",235,150,360],["Bay",275,20,300],["Yonge",350,20,300]];
- V.forEach(([n,x,y1,y2])=>{el("line",{x1:x,y1,x2:x,y2,class:"street"},s);el("text",{x:x+6,y:y1+12,class:"sname"},s,n)});
+ el("text",{x:70,y:446,class:"sname"},s,"Fort York Blvd");
+ const V=[["Spadina",60,10,440],["University",200,10,300],["York",235,150,360],["Bay",275,10,300],["Yonge",350,10,300]];
+ V.forEach(([n,x,y1,y2])=>{el("line",{x1:x,y1,x2:x,y2,class:"street"},s);el("text",{x:x+6,y:n==="York"?272:22,class:"sname"},s,n)});
  el("rect",{x:196,y:62,width:148,height:84,rx:10,class:"area"},s);
  el("text",{x:204,y:78,class:"alabel"},s,"City Hall core");
- el("text",{x:204,y:91,class:"sname"},s,"detail map below");
+ el("text",{x:204,y:91,class:"sname"},s,"12 stops, see detail map");
  el("rect",{x:300,y:52,width:50,height:40,rx:6,fill:"none",stroke:"var(--muted)","stroke-dasharray":"3 3"},s);
  el("text",{x:302,y:48,class:"sname"},s,"Trinity Sq");
- el("path",{d:"M218 230 L235 230 L235 150",class:"route"},r);
+ el("path",{d:"M176 230 L235 230 L235 150",class:"route"},r);
  el("path",{d:"M235 150 L235 120 L320 110 L325 80 L345 120 L350 150",class:"route"},r);
  el("path",{d:"M350 150 L350 300 L262 300",class:"sub"},r);
  el("path",{d:"M255 300 L235 300 L235 360 L150 360 L140 360 L110 368 L66 404 L60 404 L60 300",class:"route"},r);
- const marks=[["LBB",218,230,"start"],["Queen stn",350,150,""],["Union",258,300,""],["Home",60,300,"home"]];
- marks.forEach(([t,x,y,k])=>{el("rect",{x:x-5,y:y-5,width:10,height:10,rx:k?5:2,fill:"var(--ink)"},p);el("text",{x:x+(k==="home"?9:8),y:y+(k==="start"?16:-8),class:"mark","text-anchor":k==="home"?"start":"start"},p,t)});
+ const marks=[["LBB",176,230,"start"],["Queen stn",350,150,""],["Union",258,300,""],["Home",60,300,"home"]];
+ marks.forEach(([t,x,y,k])=>{el("rect",{x:x-5,y:y-5,width:10,height:10,rx:k?5:2,fill:"var(--ink)"},p);el("text",{x:x+(k==="home"?9:k==="start"?-10:8),y:y+(k==="start"?18:-8),class:"mark"},p,t)});
  STOPS.filter(x=>x.ov).forEach(x=>pin(p,x,x.ov));
 })();
 
@@ -273,9 +279,10 @@ function pin(parent,stop,[x,y]){
 function jump(n){const c=document.getElementById("s"+n);if(!c)return;c.scrollIntoView({block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1400)}
 
 /* Core detail map */
+let coreSvg=null;
 function coreMap(){
  const fig=document.createElement("figure");fig.className="map";
- const svg=el("svg",{viewBox:"0 0 400 290",role:"img","aria-label":"Detail map of Nathan Phillips Square and Old City Hall"},fig);
+ const svg=coreSvg=el("svg",{viewBox:"0 0 400 290",role:"img","aria-label":"Detail map of Nathan Phillips Square and Old City Hall"},fig);
  const s=el("g",{},svg),r=el("g",{},svg),p=el("g",{},svg);
  [["Queen St W",240,10,395],["Hagerman",30,100,395]].forEach(([n,y,a,b])=>{el("line",{x1:a,y1:y,x2:b,y2:y,class:"street"},s);el("text",{x:b-4,y:y-7,class:"sname","text-anchor":"end"},s,n)});
  el("line",{x1:250,y1:142,x2:395,y2:142,class:"street minor"},s);el("text",{x:392,y:135,class:"sname","text-anchor":"end"},s,"Albert");
@@ -312,7 +319,7 @@ LEGS.forEach(L=>{
  if(L.map)sec.appendChild(coreMap());
  STOPS.filter(s=>s.leg===L.id).forEach(s=>{
   const d=document.createElement("article");d.className="stop t"+s.t;d.id="s"+s.n;
-  d.innerHTML=`<div class="badge">${s.n}</div><div><h3>${s.name}</h3><div class="by">${s.by}</div><p class="where">${s.where}</p>${s.what?`<p class="what">${s.what}</p>`:""}<div class="row"><label><input type="checkbox"> Seen it</label><button type="button" class="herebtn">We're here</button><span class="who"></span></div></div>`;
+  d.innerHTML=`<div class="badge">${s.n}</div><div><h3>${s.name}</h3><div class="by">${s.by}</div><p class="where">${s.where}</p>${s.what?`<p class="what">${s.what}</p>`:""}<div class="row"><label><input type="checkbox"> Seen it</label><button type="button" class="herebtn">We're here</button><a class="gmap" href="${gmap(s.n)}" target="_blank" rel="noopener">Directions</a><span class="who"></span></div></div>`;
   d.querySelector("input").addEventListener("change",e=>{
     if(!ensureName()){e.target.checked=!e.target.checked;return}
     send({t:"seen",n:s.n,v:e.target.checked,by:me});
@@ -362,6 +369,46 @@ function tick(){
  render();
 }
 tick();setInterval(tick,20000);
+
+/* Your location: GPS -> Toronto street grid (about 16.5 deg off north) -> schematic map */
+const GA=16.5*Math.PI/180,GC=Math.cos(GA),GS=Math.sin(GA);
+function toUV(la,lo){const dx=(lo+79.385)*80530,dy=(la-43.65)*111132;return[dx*GC+dy*GS,-dx*GS+dy*GC]}
+function lerp(t,v){for(let i=0;i<t.length-1;i++){const[a,x]=t[i],[b,y]=t[i+1];if(v<=b||i===t.length-2)return x+(v-a)*(y-x)/(b-a)}}
+// [grid metres, map px]: streets Spadina/University/York/Bay/Yonge and Bremner/Front/King/Queen/Dundas (core map: Hagerman/Albert)
+const MAPS=[
+ {svg:document.querySelector("#mapOverview svg"),W:400,H:470,X:[[-917,60],[-75,200],[43,235],[290,275],[521,350]],Y:[[-790,360],[-570,300],[-225,230],[125,150],[590,30]]},
+ {svg:coreSvg,W:400,H:290,X:[[-75,22],[43,120],[290,250],[385,378],[521,560]],Y:[[-225,492],[125,240],[261,142],[420,30],[590,-89]]}
+];
+const locText=document.getElementById("locText"),locBtn=document.getElementById("locBtn");
+let watchId=null,locOn=false;
+function placeMe(la,lo,acc){
+ const[u,v]=toUV(la,lo);let shown=0;
+ MAPS.forEach(m=>{
+  if(!m.svg)return;
+  if(!m.me){m.me=el("g",{class:"me"},m.svg);el("circle",{r:14,class:"halo"},m.me);el("circle",{r:6,class:"dot"},m.me)}
+  const x=lerp(m.X,u),y=lerp(m.Y,v),inside=x>-4&&x<m.W+4&&y>-4&&y<m.H+4;
+  m.me.style.display=inside?"":"none";
+  if(inside){m.me.setAttribute("transform","translate("+x.toFixed(1)+" "+y.toFixed(1)+")");shown++}
+ });
+ locText.textContent=shown?("You're the blue dot (within about "+Math.round(acc)+" m)."):"You're off the map right now. The dot appears once you're back downtown.";
+}
+function hideMe(){MAPS.forEach(m=>{if(m.me)m.me.style.display="none"})}
+function startLoc(){
+ if(!navigator.geolocation){locText.textContent="This browser can't share your location.";return}
+ if(watchId!=null)return;
+ locText.textContent="Finding you…";
+ watchId=navigator.geolocation.watchPosition(
+  p=>placeMe(p.coords.latitude,p.coords.longitude,p.coords.accuracy),
+  e=>{if(e.code===1){stopLoc();locOn=false;locBtn.textContent="Show me";locText.textContent="Location is blocked. Allow it for this site in your browser settings, then tap Show me again."}else locText.textContent="Can't get a GPS fix right now. Still trying…"},
+  {enableHighAccuracy:true,maximumAge:10000,timeout:20000});
+}
+function stopLoc(){if(watchId!=null)navigator.geolocation.clearWatch(watchId);watchId=null}
+locBtn.addEventListener("click",()=>{
+ locOn=!locOn;
+ if(locOn){locBtn.textContent="Stop";startLoc()}
+ else{stopLoc();hideMe();locBtn.textContent="Show me";locText.textContent="Tap to put yourself on the maps."}
+});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)stopLoc();else if(locOn)startLoc()});
 
 fullSync();live();
 setInterval(fullSync,30000);
