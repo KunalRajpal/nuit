@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nuit Blanche 2026: our route</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#141833; --panel:#1d2247; --line:#2d3466; --ink:#eceaf6; --muted:#a3a7cb;
+  --gold:#f4b445; --lilac:#b9a6ff; --dim:#6b729e; --street:#343c74; --route:#f4b445; --subway:#b9a6ff;
+  --pinText:#141833;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f2f1f8; --panel:#ffffff; --line:#dcdaea; --ink:#1a1d3b; --muted:#5d6188;
+    --gold:#c47f08; --lilac:#6b52d6; --dim:#9a9dbb; --street:#d6d4e6; --route:#c47f08; --subway:#6b52d6;
+    --pinText:#ffffff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141833; --panel:#1d2247; --line:#2d3466; --ink:#eceaf6; --muted:#a3a7cb;
+  --gold:#f4b445; --lilac:#b9a6ff; --dim:#6b729e; --street:#343c74; --route:#f4b445; --subway:#b9a6ff; --pinText:#141833;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 64px}
+header.hero{padding:36px 0 18px}
+.hero h1{font-size:clamp(2.6rem,11vw,4.2rem);line-height:.92;font-weight:800;letter-spacing:-.03em;margin:0 0 14px}
+.hero h1 span{display:block;font-weight:400;color:var(--muted);font-size:.42em;letter-spacing:0;margin-top:10px;line-height:1.25}
+.hero p{margin:0;color:var(--muted);max-width:52ch}
+.clock{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:.92rem}
+.clock b{color:var(--gold);font-weight:600}
+.clock .prog{color:var(--muted);white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin:18px 0 6px;font-size:.88rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.map{background:var(--panel);border:1px solid var(--line);border-radius:18px;margin:14px 0 8px;overflow:hidden}
+.map svg{display:block;width:100%;height:auto}
+.map figcaption{padding:10px 14px 12px;font-size:.84rem;color:var(--muted);border-top:1px solid var(--line)}
+svg .street{stroke:var(--street);stroke-width:7;stroke-linecap:round;fill:none}
+svg .street.minor{stroke-width:4}
+svg .sname{fill:var(--muted);font-size:9px;font-family:inherit;opacity:.85}
+svg .area{fill:var(--line);opacity:.55}
+svg .bld{fill:none;stroke:var(--muted);stroke-width:1.2;opacity:.7}
+svg .alabel{fill:var(--muted);font-size:9.5px;font-weight:600}
+svg .route{stroke:var(--route);stroke-width:3;fill:none;stroke-dasharray:1 7;stroke-linecap:round}
+svg .sub{stroke:var(--subway);stroke-width:3;fill:none;stroke-dasharray:8 6}
+svg .pin{cursor:pointer}
+svg .pin circle{stroke:var(--bg);stroke-width:2}
+svg .pin text{fill:var(--pinText);font-size:9.5px;font-weight:800;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+svg .pin.seen{opacity:.35}
+svg .pin:focus{outline:none}
+svg .pin:focus circle{stroke:var(--ink);stroke-width:3}
+svg .mark{fill:var(--ink);font-size:10px;font-weight:600}
+.leg{margin-top:40px}
+.leg h2{font-size:1.65rem;line-height:1.1;font-weight:800;letter-spacing:-.02em;margin:0 0 4px}
+.leg .how{color:var(--muted);margin:0 0 12px;font-size:.95rem}
+.stop{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:14px 0;border-top:1px solid var(--line);transition:background .4s}
+.stop.flash{background:color-mix(in srgb,var(--gold) 14%,transparent)}
+.badge{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.95rem;color:var(--pinText)}
+.t3 .badge{background:var(--gold)} .t2 .badge{background:var(--lilac)} .t1 .badge{background:var(--dim)}
+.stop h3{margin:0;font-size:1.08rem;line-height:1.25;font-weight:600}
+.stop .by{color:var(--muted);font-size:.9rem}
+.stop .where{font-size:.9rem;margin:4px 0 0}
+.stop .what{margin:6px 0 0;font-size:.95rem;max-width:60ch}
+.stop label{display:inline-flex;align-items:center;gap:8px;margin-top:8px;font-size:.88rem;color:var(--muted);cursor:pointer;min-height:32px}
+.stop input{width:18px;height:18px;accent-color:var(--gold)}
+.stop.is-seen h3{text-decoration:line-through;text-decoration-color:var(--muted)}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:14px 0;font-size:.94rem}
+.note b{font-weight:600}
+.time{color:var(--gold);font-weight:600}
+.group{display:grid;gap:8px}
+.group button,.stop .herebtn,.namebtn{font:inherit;font-size:.85rem;background:none;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:4px 12px;cursor:pointer;min-height:32px}
+.group .sync{font-size:.8rem;color:var(--muted)}
+.group .sync.live::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#4fd18b;margin-right:6px}
+.group .sync.off::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#e2685f;margin-right:6px}
+.stop .row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:8px}
+.stop .row label{margin-top:0}
+.stop .who{font-size:.82rem;color:var(--muted)}
+.stop.is-here{box-shadow:inset 3px 0 0 var(--gold)}
+svg .pin.here circle{stroke:var(--ink);stroke-width:3.5}
+.namebtn{padding:2px 10px;min-height:28px}
+footer{margin-top:44px;color:var(--muted);font-size:.84rem;border-top:1px solid var(--line);padding-top:16px}
+footer button{font:inherit;background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:6px 14px;cursor:pointer;margin-top:10px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.stop{transition:none}html{scroll-behavior:auto}}
+@media (prefers-reduced-motion: no-preference){html{scroll-behavior:smooth}}
+</style>
+</head>
+<body>
+<div class="clock" role="status" aria-live="polite"><div class="wrap" style="padding:0 18px;display:flex;justify-content:space-between;width:100%;gap:12px"><span id="clockText">Checking the time…</span><span class="prog"><span id="prog"></span> <button type="button" class="namebtn" id="nameBtn">Set name</button></span></div></div>
+<div class="wrap">
+<header class="hero">
+  <h1>Nuit Blanche, our way home<span>Saturday, October 3. From Lobster Burger Bar through the City Hall core to Spadina and Front.</span></h1>
+  <p>Numbers match the official Nuit Blanche art map. Tap a pin to jump to its stop. Ticks, check-ins and the meetup spot sync to everyone with this link.</p>
+</header>
+
+<div class="legend" aria-label="Legend">
+  <span><i style="background:var(--gold)"></i>Don't miss</span>
+  <span><i style="background:var(--lilac)"></i>Worth it</span>
+  <span><i style="background:var(--dim)"></i>If you have energy</span>
+</div>
+
+<section class="note group" aria-label="Group status">
+  <div><b>We're at:</b> <span id="hereText">Nobody has checked in yet.</span></div>
+  <div><b>Meetup spot:</b> <span id="meetText">Not set.</span> <button type="button" id="setMeet">Set</button></div>
+  <div class="sync off" id="sync">Connecting to the group…</div>
+</section>
+
+<figure class="map" id="mapOverview">
+  <svg viewBox="0 0 400 470" role="img" aria-label="Overview map of the whole route">
+    <g id="ovStreets"></g>
+    <g id="ovRoute"></g>
+    <g id="ovPins"></g>
+  </svg>
+  <figcaption>The whole night. Gold dots are walking, the lilac dashes are the subway from Queen to Union. Not to scale.</figcaption>
+</figure>
+
+<div class="note"><b>Two things happen at the top of every hour:</b> the marching band (06) comes down the City Hall ramp for 10 minutes, and the CN Tower lights up for Sources (72) for 30 minutes. The bar at the top counts down to the next one.</div>
+
+<main id="legs"></main>
+
+
+<div class="note"><b>If you get tired, protect these:</b> 09, 06, 15, 12, 05, 02. Cut in this order: Trinity Square, 01, 40 and 41, then Fort York Blvd.</div>
+<div class="note"><b>Washrooms and food:</b> the Snack &amp; Skate booth west of the TORONTO sign closes its washrooms at 10 PM. After that, use the Event Centre on Bay just north of Queen, which also has food trucks and water refills.</div>
+<div class="note"><b>Staying up all week:</b> UFO (moving in front of Old City Hall), Blankets (Under) Cover and Echoes of the Apiary run until October 10. Everything else is tonight only.</div>
+
+<footer>
+  Locations come from the City of Toronto's Nuit Blanche 2026 Travel Guide and art map. Information can change, so check toronto.ca/NuitBlanche if something isn't where it should be.<br>
+  <button type="button" id="reset">Clear all ticks for everyone</button>
+</footer>
+</div>
+
+<script>
+
+const LEGS=[
+ {id:1,title:"LBB to UFO",how:"8 min. Walk east on King to York, then north to Queen."},
+ {id:2,title:"Rosa's Garden",how:"3 min west along Queen, then up Osgoode Lane."},
+ {id:3,title:"Nathan Phillips Square",how:"60 to 75 min. The core of the night. Time it so you're at the ramp for the next :00.",map:true},
+ {id:4,title:"Old City Hall",how:"45 to 60 min, indoors. Cross Bay and go in from Albert St."},
+ {id:5,title:"Trinity Square (optional)",how:"5 min north up James St, behind the Eaton Centre."},
+ {id:6,title:"Home through CityPlace",how:"Subway from Queen station to Union, then walk west along Bremner and Fort York Blvd."}
+];
+const STOPS=[
+ {n:"02",t:3,leg:1,name:"UFO",by:"Brandon Vickerd",where:"123 Queen St W, east of York near the Sheraton",what:"A spaceship lying on a crushed car, a piece about conspiracy, spectacle and shared paranoia.",core:[140,262],ov:[238,150]},
+ {n:"01",t:1,leg:2,name:"Rosa's Garden",by:"Marco Baldonado",where:"Laneway north of Osgoode Hall, enter from Osgoode Lane",what:"Walk through clotheslines, harvest baskets, photos and a video portrait of the artist's 99-year-old grandmother. Skip it if there's a line.",core:[66,134]},
+ {n:"05",t:3,leg:3,name:"Blankets (Under) Cover",by:"Shelley Niro",where:"South of the pond, north of Queen",what:"Thirteen point blankets, one per province and territory, showing wildlife devastated by colonial industry and Indigenous daily life.",core:[178,222]},
+ {n:"04",t:2,leg:3,name:"in Water, Together",by:"Alexandra Gelis",where:"West of the TORONTO sign. Optional line at the southeast corner of the pond",what:"A glowing structure of water and light. Moving together, people remix hundreds of the artist's videos and sounds.",core:[124,196]},
+ {n:"07",t:2,leg:3,name:"Avataq",by:"Couzyn van Heuvelen",where:"North of the TORONTO sign",what:"A giant foil-balloon form based on the Inuit sealskin hunting float.",core:[178,140]},
+ {n:"06",t:3,leg:3,name:"band band clock",by:"Lisa Kiss",where:"Top of the curved ramp up to City Hall's roof",what:"A marching band of marching bands comes down the ramp every hour on the hour, for 10 minutes. This year's poster image.",core:[232,74]},
+ {n:"03",t:2,leg:3,name:"Echoes of the Apiary",by:"Joseph David Providence Farrugia",where:"City Hall podium roof. Walk up the ramp right after the band",what:"Glowing beehives, drifting smoke and sound. Look southwest for the CN Tower lighting up (72) until :30.",core:[170,70]},
+ {n:"09",t:3,leg:3,name:"On Flashing Lights",by:"Brendan Fernandes",where:"Garage under the square. Elevators beside the ramp to P1, or the Bay St car ramp",what:"Police cars' flashing lights become the backdrop for a dance night with live DJs. Fog, strobes, loud. The best thing tonight.",core:[262,124]},
+ {n:"08",t:2,leg:3,name:"Everything I Wanted To Tell You",by:"Hiba Abdallah",where:"Projected on City Hall's East Tower. Best from the east side of Bay, above Albert",what:"Scarborough's stories and memories as giant text on the tower. Just look up.",core:[270,58]},
+ {n:"14",t:1,leg:4,name:"R.I.S.E. Through the Ages: Where I'm From",by:"R.I.S.E. Edutainment",where:"Old City Hall courtyard, entrance on Albert St",what:"Music, poetry and live performance running all night.",core:[318,168]},
+ {n:"15",t:3,leg:4,name:"Simile Aria",by:"Maggy Hamel-Metsos",where:"Six spots: two on the main floor, four on Floor 2",what:"Pipe organ cries erupting out of the wail of industrial air compressors. The one people are talking about.",core:[296,196]},
+ {n:"13",t:2,leg:4,name:"Museum of Lost Things",by:"Rhonda Weppler and Trevor Mahovsky",where:"Main floor, the former Library of Justice",what:"People's watercolours of lost objects, turned into ghostly lanterns."},
+ {n:"16",t:2,leg:4,name:"Ephemera: The Art We Didn't Make",by:"Blessyl Buan with Toronto Dance Theatre",where:"Main floor, second-floor staircase and balcony",what:"A dance premiere about abandoned ideas and art that never got made."},
+ {n:"12",t:3,leg:4,name:"Everything and Nothing",by:"Kelly Mark",where:"Courtroom 123, Floor 2",what:"Two people trade 100 lines, alternating \"everything\" and \"nothing\". It's in a courtroom, so sit down and rest."},
+ {n:"41",t:1,leg:4,name:"The Sleep of Reason Produces Monsters",by:"Jeffrey Halstead",where:"Room 121",what:"A 30-foot video wall that reflects the ghosts of whoever's watching."},
+ {n:"40",t:1,leg:4,name:"At the Edge of Remembering",by:"Par Nair",where:"Floor 2",what:"Only if you still have energy."},
+ {n:"17",t:2,leg:4,name:"I Miss You: T.Dot Memories",by:"SUN SUN",where:"Out front on Queen St W. Leave by the Queen St doors",what:"A giant glowing inflatable of lost Toronto landmarks. Great photo.",core:[318,256]},
+ {n:"18",t:2,leg:5,name:"Ever Sick",by:"SJ Okemow",where:"Trinity Square labyrinth, southwest of the church",what:"An interactive projection built around the healing jingle dress tradition, made with the disabled community.",ov:[316,70]},
+ {n:"19",t:1,leg:5,name:"colour/LINE I public/body",by:"Brandy Leary",where:"Inside the Church of the Holy Trinity",what:"Video, light and live movement. You're invited to join in with simple prompts."},
+ {n:"20",t:1,leg:5,name:"The Evening News / large craft warnings",by:"[elephants] collective",where:"Between the church and the Eaton Centre",what:"Live radio theatre set exactly one year from now, in a world where the sky is falling.",ov:[340,82]},
+ {n:"72",t:2,leg:6,name:"Sources (Toronto)",by:"Andrés Ramírez Gaviria",where:"The CN Tower, from :00 to :30 every hour",what:"A light piece made for the tower. Catch it from anywhere with a view.",ov:[150,352]},
+ {n:"31",t:2,leg:6,name:"Garrison Creek",by:"Brian Leclerc",where:"45 Fort York Blvd",what:"A swarm of glowing salmon swimming through the buried creek. Best piece near home.",ov:[112,382]},
+ {n:"54",t:1,leg:6,name:"Farsh",by:"Roda Medhat",where:"55 Fort York Blvd",what:"",ov:[90,396]},
+ {n:"53",t:1,leg:6,name:"Killim",by:"Roda Medhat",where:"95 Fort York Blvd, with Night Waves (B) at Bobber Plaza",what:"",ov:[66,410]}
+];
+
+const TOPIC="nb26-94760942652f";
+const API="https://ntfy.sh/"+TOPIC;
+const color=t=>t===3?"var(--gold)":t===2?"var(--lilac)":"var(--dim)";
+const NS="http://www.w3.org/2000/svg";
+function el(tag,attrs,parent,text){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(text!=null)e.textContent=text;parent&&parent.appendChild(e);return e}
+const nameOf=n=>{const s=STOPS.find(x=>x.n===n);return s?n+" "+s.name:n};
+
+/* Shared state, rebuilt from the group's message log */
+let state={seen:{},here:null,meet:null};
+const applied=new Set();
+let me="";
+try{me=localStorage.getItem("nb26-name")||""}catch(e){}
+try{const c=JSON.parse(localStorage.getItem("nb26-cache")||"null");if(c&&c.seen)state=c}catch(e){}
+function cache(){try{localStorage.setItem("nb26-cache",JSON.stringify(state))}catch(e){}}
+const seen=new Proxy({}, {get:(_,k)=>!!state.seen[k]});
+
+function apply(m,at){
+  if(!m||typeof m!=="object")return;
+  at=at||Date.now()/1000;
+  if(m.t==="seen"&&typeof m.n==="string"){ if(m.v) state.seen[m.n]={by:String(m.by||"Someone").slice(0,30),at}; else delete state.seen[m.n]; }
+  else if(m.t==="here"&&typeof m.n==="string"){ state.here={n:m.n,by:String(m.by||"Someone").slice(0,30),at}; }
+  else if(m.t==="meet"){ state.meet={text:String(m.text||"").slice(0,140),by:String(m.by||"Someone").slice(0,30),at}; }
+  else if(m.t==="reset"){ state.seen={}; }
+}
+function ingest(evt){
+  if(!evt||evt.event!=="message"||applied.has(evt.id))return false;
+  applied.add(evt.id);
+  try{apply(JSON.parse(evt.message),evt.time)}catch(e){}
+  return true;
+}
+async function fullSync(){
+  try{
+    const r=await fetch(API+"/json?poll=1&since=all",{cache:"no-store"});
+    if(!r.ok)throw 0;
+    const txt=await r.text();
+    const fresh={seen:{},here:null,meet:null};const prev=state;state=fresh;applied.clear();
+    txt.split("\n").filter(Boolean).forEach(l=>{try{ingest(JSON.parse(l))}catch(e){}});
+    setSync(true);cache();render();
+  }catch(e){setSync(false)}
+}
+function live(){
+  try{
+    const es=new EventSource(API+"/sse");
+    es.onmessage=e=>{try{if(ingest(JSON.parse(e.data))){cache();render()}}catch(_){}};
+    es.onopen=()=>setSync(true);
+    es.onerror=()=>setSync(false);
+  }catch(e){}
+}
+async function send(m){
+  apply(m);cache();render();
+  try{const r=await fetch(API,{method:"POST",body:JSON.stringify(m)});if(!r.ok)throw 0;setSync(true)}
+  catch(e){setSync(false);alert("Couldn't reach the group. Check your signal and try again.")}
+}
+function setSync(ok){const s=document.getElementById("sync");s.className="sync "+(ok?"live":"off");s.textContent=ok?"Live, synced with the group":"Offline, retrying. Your view may be out of date."}
+function ensureName(){
+  if(me)return true;
+  const v=(prompt("Your name, so the group knows who ticked it:")||"").trim().slice(0,30);
+  if(!v)return false;me=v;try{localStorage.setItem("nb26-name",me)}catch(e){};nameBtn();return true;
+}
+function nameBtn(){document.getElementById("nameBtn").textContent=me?("You: "+me):"Set name"}
+document.getElementById("nameBtn").addEventListener("click",()=>{const v=(prompt("Your name:",me)||"").trim().slice(0,30);if(v){me=v;try{localStorage.setItem("nb26-name",me)}catch(e){};nameBtn()}});
+nameBtn();
+
+function ago(at){const m=Math.max(0,Math.round((Date.now()/1000-at)/60));return m<1?"just now":m===1?"1 min ago":m<60?m+" min ago":Math.floor(m/60)+" h ago"}
+
+/* Overview map */
+(function(){
+ const s=document.getElementById("ovStreets"),r=document.getElementById("ovRoute"),p=document.getElementById("ovPins");
+ const H=[["Dundas",40,20,385],["Queen",150,20,385],["King",230,20,385],["Front",300,20,385],["Bremner",360,60,260]];
+ H.forEach(([n,y,x1,x2])=>{el("line",{x1,y1:y,x2,y2:y,class:"street"},s);el("text",{x:x2-2,y:y-7,class:"sname","text-anchor":"end"},s,n)});
+ el("path",{d:"M10 430 L60 404 L110 368 L140 360",class:"street minor"},s);
+ el("text",{x:16,y:446,class:"sname"},s,"Fort York Blvd");
+ const V=[["Spadina",60,20,440],["University",200,20,300],["York",235,150,360],["Bay",275,20,300],["Yonge",350,20,300]];
+ V.forEach(([n,x,y1,y2])=>{el("line",{x1:x,y1,x2:x,y2,class:"street"},s);el("text",{x:x+6,y:y1+12,class:"sname"},s,n)});
+ el("rect",{x:196,y:62,width:148,height:84,rx:10,class:"area"},s);
+ el("text",{x:204,y:78,class:"alabel"},s,"City Hall core");
+ el("text",{x:204,y:91,class:"sname"},s,"detail map below");
+ el("rect",{x:300,y:52,width:50,height:40,rx:6,fill:"none",stroke:"var(--muted)","stroke-dasharray":"3 3"},s);
+ el("text",{x:302,y:48,class:"sname"},s,"Trinity Sq");
+ el("path",{d:"M218 230 L235 230 L235 150",class:"route"},r);
+ el("path",{d:"M235 150 L235 120 L320 110 L325 80 L345 120 L350 150",class:"route"},r);
+ el("path",{d:"M350 150 L350 300 L262 300",class:"sub"},r);
+ el("path",{d:"M255 300 L235 300 L235 360 L150 360 L140 360 L110 368 L66 404 L60 404 L60 300",class:"route"},r);
+ const marks=[["LBB",218,230,"start"],["Queen stn",350,150,""],["Union",258,300,""],["Home",60,300,"home"]];
+ marks.forEach(([t,x,y,k])=>{el("rect",{x:x-5,y:y-5,width:10,height:10,rx:k?5:2,fill:"var(--ink)"},p);el("text",{x:x+(k==="home"?9:8),y:y+(k==="start"?16:-8),class:"mark","text-anchor":k==="home"?"start":"start"},p,t)});
+ STOPS.filter(x=>x.ov).forEach(x=>pin(p,x,x.ov));
+})();
+
+function pin(parent,stop,[x,y]){
+ const g=el("g",{class:"pin",tabindex:"0",role:"button","aria-label":stop.n+" "+stop.name,"data-n":stop.n},parent);
+ el("circle",{cx:x,cy:y,r:11,fill:color(stop.t)},g);
+ el("text",{x,y},g,stop.n);
+ const go=()=>jump(stop.n);
+ g.addEventListener("click",go);
+ g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go()}});
+}
+function jump(n){const c=document.getElementById("s"+n);if(!c)return;c.scrollIntoView({block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1400)}
+
+/* Core detail map */
+function coreMap(){
+ const fig=document.createElement("figure");fig.className="map";
+ const svg=el("svg",{viewBox:"0 0 400 290",role:"img","aria-label":"Detail map of Nathan Phillips Square and Old City Hall"},fig);
+ const s=el("g",{},svg),r=el("g",{},svg),p=el("g",{},svg);
+ [["Queen St W",240,10,395],["Hagerman",30,100,395]].forEach(([n,y,a,b])=>{el("line",{x1:a,y1:y,x2:b,y2:y,class:"street"},s);el("text",{x:b-4,y:y-7,class:"sname","text-anchor":"end"},s,n)});
+ el("line",{x1:250,y1:142,x2:395,y2:142,class:"street minor"},s);el("text",{x:392,y:135,class:"sname","text-anchor":"end"},s,"Albert");
+ [["University",22,10,285],["Bay",250,10,285],["James",378,142,240]].forEach(([n,x,a,b])=>{el("line",{x1:x,y1:a,x2:x,y2:b,class:"street"},s);el("text",{x:x+6,y:a+12,class:"sname"},s,n)});
+ el("line",{x1:96,y1:120,x2:96,y2:240,class:"street minor"},s);el("text",{x:100,y:118,class:"sname"},s,"Osgoode Ln");
+ el("line",{x1:120,y1:240,x2:120,y2:285,class:"street minor"},s);el("text",{x:124,y:282,class:"sname"},s,"York");
+ el("rect",{x:30,y:150,width:60,height:82,rx:4,class:"bld"},s);el("text",{x:36,y:196,class:"sname"},s,"Osgoode Hall");
+ el("rect",{x:104,y:96,width:140,height:138,rx:6,class:"area"},s);
+ el("text",{x:112,y:112,class:"alabel"},s,"Nathan Phillips Sq");
+ el("ellipse",{cx:162,cy:174,rx:44,ry:16,fill:"none",stroke:"var(--subway)","stroke-width":1.2,opacity:.8},s);
+ el("text",{x:146,y:177,class:"sname"},s,"pond");
+ el("rect",{x:140,y:192,width:44,height:8,rx:2,fill:"var(--muted)",opacity:.7},s);
+ el("text",{x:145,y:212,class:"sname"},s,"TORONTO");
+ el("path",{d:"M120 88 Q175 40 238 88",class:"bld"},s);el("text",{x:150,y:56,class:"sname"},s,"City Hall + roof");
+ el("path",{d:"M232 74 Q246 96 236 118",fill:"none",stroke:"var(--muted)","stroke-width":5,opacity:.5,"stroke-linecap":"round"},s);
+ el("rect",{x:262,y:150,width:108,height:84,rx:4,class:"bld"},s);el("text",{x:270,y:226,class:"sname"},s,"Old City Hall");
+ el("rect",{x:300,y:158,width:40,height:24,rx:3,fill:"none",stroke:"var(--muted)","stroke-dasharray":"2 3"},s);
+ el("path",{d:"M248 196 l8 -12 l8 12 z",fill:"var(--muted)"},s);el("text",{x:228,y:208,class:"sname"},s,"Event Ctr");
+ el("text",{x:296,y:208,class:"sname"},s,"also 12 13 16 40 41 inside");
+ el("path",{d:"M378 142 L378 110",class:"route"},r);el("text",{x:350,y:104,class:"sname"},s,"to Trinity Sq");
+ el("path",{d:"M120 285 L120 262 L140 262 L96 240 L96 140 L66 134 M96 240 L178 222 L124 196 L178 140 L232 74 L170 70 L236 118 L262 124 L270 58 L250 142 L318 168 L296 196 L318 256 L378 240 L378 142",class:"route"},r);
+ el("text",{x:126,y:278,class:"mark"},p,"from LBB");
+ STOPS.filter(x=>x.core).forEach(x=>pin(p,x,x.core));
+ const cap=document.createElement("figcaption");cap.textContent="City Hall core, zoomed in. The dotted line is the suggested order. Not to scale.";fig.appendChild(cap);
+ return fig;
+}
+
+
+/* Legs and stops */
+const main=document.getElementById("legs");
+LEGS.forEach(L=>{
+ const sec=document.createElement("section");sec.className="leg";
+ sec.innerHTML=`<h2>${L.id}. ${L.title}</h2><p class="how">${L.how}</p>`;
+ if(L.map)sec.appendChild(coreMap());
+ STOPS.filter(s=>s.leg===L.id).forEach(s=>{
+  const d=document.createElement("article");d.className="stop t"+s.t;d.id="s"+s.n;
+  d.innerHTML=`<div class="badge">${s.n}</div><div><h3>${s.name}</h3><div class="by">${s.by}</div><p class="where">${s.where}</p>${s.what?`<p class="what">${s.what}</p>`:""}<div class="row"><label><input type="checkbox"> Seen it</label><button type="button" class="herebtn">We're here</button><span class="who"></span></div></div>`;
+  d.querySelector("input").addEventListener("change",e=>{
+    if(!ensureName()){e.target.checked=!e.target.checked;return}
+    send({t:"seen",n:s.n,v:e.target.checked,by:me});
+  });
+  d.querySelector(".herebtn").addEventListener("click",()=>{if(ensureName())send({t:"here",n:s.n,by:me})});
+  sec.appendChild(d);
+ });
+ if(L.id===6){const n=document.createElement("div");n.className="note";n.textContent="Then it's 5 minutes north up Spadina to home.";sec.appendChild(n)}
+ main.appendChild(sec);
+});
+
+document.getElementById("setMeet").addEventListener("click",()=>{
+  if(!ensureName())return;
+  const v=(prompt("Meetup spot and time (e.g. Event Centre tent, 12:30):",state.meet?state.meet.text:"")||"").trim();
+  if(v)send({t:"meet",text:v,by:me});
+});
+document.getElementById("reset").addEventListener("click",()=>{
+  if(confirm("Clear every tick for the whole group?")&&ensureName())send({t:"reset",by:me});
+});
+
+function render(){
+  STOPS.forEach(s=>{
+    const d=document.getElementById("s"+s.n);if(!d)return;
+    const v=state.seen[s.n];
+    d.classList.toggle("is-seen",!!v);
+    d.querySelector("input").checked=!!v;
+    d.querySelector(".who").textContent=v?("Seen by "+v.by):"";
+    d.classList.toggle("is-here",!!(state.here&&state.here.n===s.n));
+  });
+  document.querySelectorAll(".pin").forEach(g=>{
+    const n=g.getAttribute("data-n");
+    g.classList.toggle("seen",!!state.seen[n]);
+    g.classList.toggle("here",!!(state.here&&state.here.n===n));
+  });
+  document.getElementById("hereText").textContent=state.here?(nameOf(state.here.n)+" ("+state.here.by+", "+ago(state.here.at)+")"):"Nobody has checked in yet.";
+  document.getElementById("meetText").textContent=state.meet?(state.meet.text+" ("+state.meet.by+")"):"Not set.";
+  document.getElementById("prog").textContent=Object.keys(state.seen).length+" of "+STOPS.length+" seen";
+}
+render();
+
+function tick(){
+ const d=new Date(),m=d.getMinutes(),left=60-m;let t;
+ if(m<10)t=`<b>The band (06) is on now</b>, for ${10-m} more min`;
+ else if(m<30)t=`CN Tower (72) lit for ${30-m} more min. Band in <b>${left} min</b>`;
+ else t=`Next band (06) and CN Tower in <b>${left} min</b>`;
+ document.getElementById("clockText").innerHTML=t;
+ render();
+}
+tick();setInterval(tick,20000);
+
+fullSync();live();
+setInterval(fullSync,30000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)fullSync()});
+</script>
+</body>
+</html>
