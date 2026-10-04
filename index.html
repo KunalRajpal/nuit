@@ -62,6 +62,7 @@ svg .mark{fill:var(--ink);font-size:10px;font-weight:600}
 .t3 .badge{background:var(--gold)} .t2 .badge{background:var(--lilac)} .t1 .badge{background:var(--dim)}
 .stop h3{margin:0;font-size:1.08rem;line-height:1.25;font-weight:600}
 .stop .by{color:var(--muted);font-size:.9rem}
+.stop .addr{font-size:.92rem;font-weight:600;margin:6px 0 0}
 .stop .where{font-size:.9rem;margin:4px 0 0}
 .stop .what{margin:6px 0 0;font-size:.95rem;max-width:60ch}
 .stop label{display:inline-flex;align-items:center;gap:8px;margin-top:8px;font-size:.88rem;color:var(--muted);cursor:pointer;min-height:32px}
@@ -141,7 +142,7 @@ footer button{font:inherit;background:none;border:1px solid var(--line);color:va
 <script>
 
 const LEGS=[
- {id:1,title:"LBB to UFO",how:"8 min. Walk east on King to York, then north to Queen."},
+ {id:1,title:"LBB to UFO",how:"5 min. Walk east to University, then north up University to Queen. UFO is just to the right."},
  {id:2,title:"Rosa's Garden",how:"3 min west along Queen, then up Osgoode Lane."},
  {id:3,title:"Nathan Phillips Square",how:"60 to 75 min. The core of the night. Time it so you're at the ramp for the next :00.",map:true},
  {id:4,title:"Old City Hall",how:"45 to 60 min, indoors. Cross Bay and go in from Albert St."},
@@ -149,7 +150,7 @@ const LEGS=[
  {id:6,title:"Home through CityPlace",how:"Subway from Queen station to Union, then walk west along Bremner and Fort York Blvd."}
 ];
 const STOPS=[
- {n:"02",t:3,leg:1,name:"UFO",by:"Brandon Vickerd",where:"123 Queen St W, east of York near the Sheraton",what:"A spaceship lying on a crushed car, a piece about conspiracy, spectacle and shared paranoia.",core:[140,262],ov:[238,150]},
+ {n:"02",t:3,leg:1,name:"UFO",by:"Brandon Vickerd",where:"Out on Queen St W in front of Osgoode Hall, between University and York",what:"A spaceship lying on a crushed car, a piece about conspiracy, spectacle and shared paranoia.",core:[72,256],ov:[218,150]},
  {n:"01",t:1,leg:2,name:"Rosa's Garden",by:"Marco Baldonado",where:"Laneway north of Osgoode Hall, enter from Osgoode Lane",what:"Walk through clotheslines, harvest baskets, photos and a video portrait of the artist's 99-year-old grandmother. Skip it if there's a line.",core:[66,134]},
  {n:"05",t:3,leg:3,name:"Blankets (Under) Cover",by:"Shelley Niro",where:"South of the pond, north of Queen",what:"Thirteen point blankets, one per province and territory, showing wildlife devastated by colonial industry and Indigenous daily life.",core:[178,222]},
  {n:"04",t:2,leg:3,name:"in Water, Together",by:"Alexandra Gelis",where:"West of the TORONTO sign. Optional line at the southeast corner of the pond",what:"A glowing structure of water and light. Moving together, people remix hundreds of the artist's videos and sounds.",core:[124,196]},
@@ -175,11 +176,30 @@ const STOPS=[
  {n:"53",t:1,leg:6,name:"Killim",by:"Roda Medhat",where:"95 Fort York Blvd, with Night Waves (B) at Bobber Plaza",what:"",ov:[66,410]}
 ];
 
-const NPS="Nathan Phillips Square, Toronto",CH="Toronto City Hall, 100 Queen St W, Toronto",OCH="Old City Hall, 60 Queen St W, Toronto",HT="Church of the Holy Trinity, 10 Trinity Square, Toronto";
-const GQ={"02":"123 Queen St W, Toronto","01":"Osgoode Hall, 130 Queen St W, Toronto","05":NPS,"04":NPS,"07":NPS,"06":NPS,"03":CH,"09":CH,"08":"Bay St & Albert St, Toronto",
-"14":OCH,"15":OCH,"13":OCH,"16":OCH,"12":OCH,"41":OCH,"40":OCH,"17":OCH,"18":"24 Trinity Square, Toronto","19":HT,"20":HT,
-"72":"CN Tower, 290 Bremner Blvd, Toronto","31":"45 Fort York Blvd, Toronto","54":"55 Fort York Blvd, Toronto","53":"95 Fort York Blvd, Toronto"};
-const gmap=n=>"https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+encodeURIComponent(GQ[n]||"Nathan Phillips Square, Toronto");
+// Official addresses (City of Toronto Nuit Blanche Travel Guide + art map) and exact spots for directions
+const NPS="Nathan Phillips Square, 100 Queen St W",OCH="Old City Hall, 60 Queen St W",HT="Church of the Holy Trinity, 10 Trinity Square";
+const ADDR={
+"02":["130-132 Queen St W, on the closed stretch of Queen between University Ave and York St",43.65103,-79.38567],
+"01":["Osgoode Hall, 130 Queen St W (laneway on the north side, off Osgoode Lane)",43.65255,-79.38545],
+"05":[NPS+" (south of the pond)",43.65225,-79.38345],
+"04":[NPS+" (west of the TORONTO sign)",43.65240,-79.38380],
+"07":[NPS+" (north of the TORONTO sign)",43.65270,-79.38360],
+"06":[NPS+" (top of the curved ramp)",43.65320,-79.38290],
+"03":["Toronto City Hall, 100 Queen St W (podium green roof)",43.65344,-79.38409],
+"09":["Garage below Nathan Phillips Square, 100 Queen St W (car ramp on Bay St)",43.65310,-79.38300],
+"08":["City Hall East Tower, 100 Queen St W (view it from 440 Bay St)",43.65372,-79.38294],
+"14":[OCH+" (courtyard, enter from Albert St)",43.65305,-79.38220],
+"15":[OCH,43.65252,-79.38172],"13":[OCH,43.65252,-79.38172],"16":[OCH,43.65252,-79.38172],
+"12":[OCH,43.65252,-79.38172],"41":[OCH,43.65252,-79.38172],"40":[OCH,43.65252,-79.38172],
+"17":[OCH+" (out front on Queen St W)",43.65210,-79.38160],
+"18":["Trinity Square Labyrinth, 24 Trinity Square",43.65417,-79.38187],
+"19":[HT,43.65461,-79.38143],
+"20":[HT+" (outside, beside the Eaton Centre)",43.65460,-79.38100],
+"72":["CN Tower, 290 Bremner Blvd (visible from all over downtown)",43.64257,-79.38706],
+"31":["45 Fort York Blvd",43.63980,-79.39496],
+"54":["55 Fort York Blvd",43.63980,-79.39545],
+"53":["95 Fort York Blvd (Bobber Plaza)",43.63897,-79.39688]};
+const gmap=n=>{const a=ADDR[n];return "https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+a[1]+","+a[2]};
 const TOPIC="nb26-94760942652f";
 const API="https://ntfy.sh/"+TOPIC;
 const color=t=>t===3?"var(--gold)":t===2?"var(--lilac)":"var(--dim)";
@@ -259,7 +279,7 @@ function ago(at){const m=Math.max(0,Math.round((Date.now()/1000-at)/60));return 
  el("text",{x:204,y:91,class:"sname"},s,"12 stops, see detail map");
  el("rect",{x:300,y:52,width:50,height:40,rx:6,fill:"none",stroke:"var(--muted)","stroke-dasharray":"3 3"},s);
  el("text",{x:302,y:48,class:"sname"},s,"Trinity Sq");
- el("path",{d:"M176 230 L235 230 L235 150",class:"route"},r);
+ el("path",{d:"M176 230 L200 230 L200 150 L235 150",class:"route"},r);
  el("path",{d:"M235 150 L235 120 L320 110 L325 80 L345 120 L350 150",class:"route"},r);
  el("path",{d:"M350 150 L350 300 L262 300",class:"sub"},r);
  el("path",{d:"M255 300 L235 300 L235 360 L150 360 L140 360 L110 368 L66 404 L60 404 L60 300",class:"route"},r);
@@ -303,8 +323,8 @@ function coreMap(){
  el("path",{d:"M248 196 l8 -12 l8 12 z",fill:"var(--muted)"},s);el("text",{x:228,y:208,class:"sname"},s,"Event Ctr");
  el("text",{x:296,y:208,class:"sname"},s,"also 12 13 16 40 41 inside");
  el("path",{d:"M378 142 L378 110",class:"route"},r);el("text",{x:350,y:104,class:"sname"},s,"to Trinity Sq");
- el("path",{d:"M120 285 L120 262 L140 262 L96 240 L96 140 L66 134 M96 240 L178 222 L124 196 L178 140 L232 74 L170 70 L236 118 L262 124 L270 58 L250 142 L318 168 L296 196 L318 256 L378 240 L378 142",class:"route"},r);
- el("text",{x:126,y:278,class:"mark"},p,"from LBB");
+ el("path",{d:"M22 285 L22 252 L72 256 L96 240 L96 140 L66 134 M96 240 L178 222 L124 196 L178 140 L232 74 L170 70 L236 118 L262 124 L270 58 L250 142 L318 168 L296 196 L318 256 L378 240 L378 142",class:"route"},r);
+ el("text",{x:28,y:280,class:"mark"},p,"from LBB");
  STOPS.filter(x=>x.core).forEach(x=>pin(p,x,x.core));
  const cap=document.createElement("figcaption");cap.textContent="City Hall core, zoomed in. The dotted line is the suggested order. Not to scale.";fig.appendChild(cap);
  return fig;
@@ -319,7 +339,7 @@ LEGS.forEach(L=>{
  if(L.map)sec.appendChild(coreMap());
  STOPS.filter(s=>s.leg===L.id).forEach(s=>{
   const d=document.createElement("article");d.className="stop t"+s.t;d.id="s"+s.n;
-  d.innerHTML=`<div class="badge">${s.n}</div><div><h3>${s.name}</h3><div class="by">${s.by}</div><p class="where">${s.where}</p>${s.what?`<p class="what">${s.what}</p>`:""}<div class="row"><label><input type="checkbox"> Seen it</label><button type="button" class="herebtn">We're here</button><a class="gmap" href="${gmap(s.n)}" target="_blank" rel="noopener">Directions</a><span class="who"></span></div></div>`;
+  d.innerHTML=`<div class="badge">${s.n}</div><div><h3>${s.name}</h3><div class="by">${s.by}</div><p class="addr">${ADDR[s.n][0]}</p><p class="where">${s.where}</p>${s.what?`<p class="what">${s.what}</p>`:""}<div class="row"><label><input type="checkbox"> Seen it</label><button type="button" class="herebtn">We're here</button><a class="gmap" href="${gmap(s.n)}" target="_blank" rel="noopener">Directions</a><span class="who"></span></div></div>`;
   d.querySelector("input").addEventListener("change",e=>{
     if(!ensureName()){e.target.checked=!e.target.checked;return}
     send({t:"seen",n:s.n,v:e.target.checked,by:me});
