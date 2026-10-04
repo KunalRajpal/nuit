@@ -62,6 +62,8 @@ svg .mark{fill:var(--ink);font-size:10px;font-weight:600}
 .t3 .badge{background:var(--gold)} .t2 .badge{background:var(--lilac)} .t1 .badge{background:var(--dim)}
 .stop h3{margin:0;font-size:1.08rem;line-height:1.25;font-weight:600}
 .stop .by{color:var(--muted);font-size:.9rem}
+details.skipped{margin-top:40px;border-top:1px solid var(--line);padding-top:8px}
+details.skipped summary{cursor:pointer;font-size:1.2rem;font-weight:800;padding:10px 0;color:var(--muted)}
 .stop .addr{font-size:.92rem;font-weight:600;margin:6px 0 0}
 .stop .where{font-size:.9rem;margin:4px 0 0}
 .stop .what{margin:6px 0 0;font-size:.95rem;max-width:60ch}
@@ -98,7 +100,7 @@ footer button{font:inherit;background:none;border:1px solid var(--line);color:va
 <div class="clock" role="status" aria-live="polite"><div class="wrap" style="padding:0 18px;display:flex;justify-content:space-between;width:100%;gap:12px"><span id="clockText">Checking the time…</span><span class="prog"><span id="prog"></span> <button type="button" class="namebtn" id="nameBtn">Set name</button></span></div></div>
 <div class="wrap">
 <header class="hero">
-  <h1>Nuit Blanche, our way home<span>Saturday, October 3. From Lobster Burger Bar through the City Hall core to Spadina and Front.</span></h1>
+  <h1>Nuit Blanche, our way home<span>From Nathan Phillips Square, west along Queen, through 401 Richmond and home to Spadina and Front.</span></h1>
   <p>Numbers match the official Nuit Blanche art map. Tap a pin to jump to its stop. Ticks, check-ins and the meetup spot sync to everyone with this link.</p>
 </header>
 
@@ -121,17 +123,16 @@ footer button{font:inherit;background:none;border:1px solid var(--line);color:va
     <g id="ovRoute"></g>
     <g id="ovPins"></g>
   </svg>
-  <figcaption>The whole night. Gold dots are walking, the lilac dashes are the subway from Queen to Union. Not to scale.</figcaption>
+  <figcaption>The walk home. Gold dots are the route: west on Queen, down Spadina, home. Not to scale.</figcaption>
 </figure>
 
-<div class="note"><b>Two things happen at the top of every hour:</b> the marching band (06) comes down the City Hall ramp for 10 minutes, and the CN Tower lights up for Sources (72) for 30 minutes. The bar at the top counts down to the next one.</div>
+<div class="note"><b>Top of every hour:</b> the CN Tower lights up for Sources (72) for 30 minutes. Look east from Spadina or Front. The bar at the top counts down to it.</div>
 
 <main id="legs"></main>
 
 
-<div class="note"><b>If you get tired, protect these:</b> 09, 06, 15, 12, 05, 02. Cut in this order: Trinity Square, 01, 40 and 41, then Fort York Blvd.</div>
-<div class="note"><b>Washrooms and food:</b> the Snack &amp; Skate booth west of the TORONTO sign closes its washrooms at 10 PM. After that, use the Event Centre on Bay just north of Queen, which also has food trucks and water refills.</div>
-<div class="note"><b>Staying up all week:</b> UFO (moving in front of Old City Hall), Blankets (Under) Cover and Echoes of the Apiary run until October 10. Everything else is tonight only.</div>
+<div class="note"><b>If you get tired, protect these:</b> 401 Richmond (69, 70, 37) and Garrison Creek (31). Cut in this order: 36, 01, then 50 Brant St.</div>
+<div class="note"><b>Heads up:</b> in past years 401 Richmond stayed open all night but not every gallery inside did, so some rooms may be closed late.</div>
 
 <footer>
   Locations come from the City of Toronto's Nuit Blanche 2026 Travel Guide and art map. Information can change, so check toronto.ca/NuitBlanche if something isn't where it should be.<br>
@@ -142,12 +143,11 @@ footer button{font:inherit;background:none;border:1px solid var(--line);color:va
 <script>
 
 const LEGS=[
- {id:1,title:"LBB to UFO",how:"5 min. Walk east to University, then north up University to Queen. UFO is just to the right."},
- {id:2,title:"Rosa's Garden",how:"3 min west along Queen, then up Osgoode Lane."},
- {id:3,title:"Nathan Phillips Square",how:"60 to 75 min. The core of the night. Time it so you're at the ramp for the next :00.",map:true},
- {id:4,title:"Old City Hall",how:"45 to 60 min, indoors. Cross Bay and go in from Albert St."},
- {id:5,title:"Trinity Square (optional)",how:"5 min north up James St, behind the Eaton Centre."},
- {id:6,title:"Home through CityPlace",how:"Subway from Queen station to Union, then walk west along Bremner and Fort York Blvd."}
+ {id:1,title:"Nathan Phillips Square to Spadina",how:"About 15 min. Walk west along Queen St W (car-free as far as University), then on to Spadina."},
+ {id:2,title:"401 Richmond St W",how:"From Queen, walk 1 block south on Spadina and turn left onto Richmond. Two floors of exhibitions in one building.",map:"west"},
+ {id:3,title:"50 Brant St",how:"About 4 min. Walk west along Richmond across Spadina, then turn left (south) onto Brant St."},
+ {id:4,title:"Home and CityPlace",how:"Walk east along King to Spadina, then south on Spadina to Front (home). Keep going about 3 min south to Fort York Blvd for the rest."},
+ {id:9,title:"Skipped tonight: City Hall core",how:"For reference only.",map:"core",collapsed:true}
 ];
 const STOPS=[
  {n:"02",t:3,leg:1,name:"UFO",by:"Brandon Vickerd",where:"Out on Queen St W in front of Osgoode Hall, between University and York",what:"A spaceship lying on a crushed car, a piece about conspiracy, spectacle and shared paranoia.",core:[72,256],ov:[218,150]},
@@ -177,6 +177,25 @@ const STOPS=[
 ];
 
 // Official addresses (City of Toronto Nuit Blanche Travel Guide + art map) and exact spots for directions
+(function(){
+ const NEWLEG={"02":1,"01":1,"72":4,"31":4,"54":4,"53":4};
+ const W={"72":null,"31":[150,396],"54":[122,418],"53":[46,430]};
+ STOPS.forEach(x=>{x.leg=NEWLEG[x.n]||9; if(x.n in W){if(W[x.n])x.w=W[x.n];} if(["18","20","31","54","53"].includes(x.n))delete x.ov;});
+ STOPS.find(x=>x.n==="01").ov=[192,134];
+ const add=[
+  {n:"36",t:1,leg:1,name:"Night Market for a Future Garden",by:"In-Situ Collaborative",where:"Optional detour: 2 min north of Queen on Spadina. Independent project with tactile elements",what:"",w:[204,48]},
+  {n:"69",t:3,leg:2,name:"Built for Art",by:"401 Richmond, various artists",where:"Throughout the building. Major institution project",what:"The building's own all-night program: two floors of exhibitions in a heritage factory turned arts hub.",w:[244,163]},
+  {n:"70",t:2,leg:2,name:"The T.O. You Don't Know",by:"Museum of Toronto, various artists",where:"Inside 401 Richmond. Major institution project",what:"",w:[268,163]},
+  {n:"37",t:1,leg:2,name:"I Want to Hold You",by:"Keisha James",where:"Inside 401 Richmond. Independent project with open captions and tactile elements",what:"",w:[292,163]},
+  {n:"38",t:1,leg:3,name:"Shot List",by:"Gregory Dekter",where:"Independent project",what:"",w:[90,192]},
+  {n:"35",t:1,leg:3,name:"A Walk On The West Side",by:"4 The West End",where:"Independent project",what:"",w:[114,192]},
+  {n:"B",t:1,leg:4,name:"Night Waves",by:"CityPlace and Fort York BIA",where:"Bobber Plaza. Experiential activation",what:"",w:[66,402]},
+  {n:"65",t:2,leg:4,name:"A Persistent Crossing",by:"Stanzie Tooth, The Bentway Staging Grounds",where:"Major institution project",what:"Towering banners on the site's scaffolding: human silhouettes, native plants and pollinators.",w:[22,458]}
+ ];
+ const order=["02","01","36","69","70","37","38","35","72","31","54","53","B","65"];
+ add.forEach(x=>STOPS.push(x));
+ STOPS.sort((a,b)=>{const ia=order.indexOf(a.n),ib=order.indexOf(b.n);return (ia<0?99:ia)-(ib<0?99:ib)});
+})();
 const NPS="Nathan Phillips Square, 100 Queen St W",OCH="Old City Hall, 60 Queen St W",HT="Church of the Holy Trinity, 10 Trinity Square";
 const ADDR={
 "02":["130-132 Queen St W, on the closed stretch of Queen between University Ave and York St",43.65103,-79.38567],
@@ -195,10 +214,15 @@ const ADDR={
 "18":["Trinity Square Labyrinth, 24 Trinity Square",43.65417,-79.38187],
 "19":[HT,43.65461,-79.38143],
 "20":[HT+" (outside, beside the Eaton Centre)",43.65460,-79.38100],
-"72":["CN Tower, 290 Bremner Blvd (visible from all over downtown)",43.64257,-79.38706],
+"72":["CN Tower, 290 Bremner Blvd (look east from Spadina or Front)",43.64257,-79.38706],
 "31":["45 Fort York Blvd",43.63980,-79.39496],
 "54":["55 Fort York Blvd",43.63980,-79.39545],
-"53":["95 Fort York Blvd (Bobber Plaza)",43.63897,-79.39688]};
+"53":["95 Fort York Blvd",43.63897,-79.39688],
+"36":["222 Spadina Ave",43.65077,-79.39776],
+"69":["401 Richmond St W",43.64769,-79.39455],"70":["401 Richmond St W",43.64769,-79.39455],"37":["401 Richmond St W",43.64769,-79.39455],
+"38":["50 Brant St",43.64687,-79.39919],"35":["50 Brant St",43.64687,-79.39919],
+"B":["Bobber Plaza, 95 Fort York Blvd",43.63941,-79.39686],
+"65":["The Bentway Staging Grounds, 44 Dan Leckie Way",43.63794,-79.39746]};
 const gmap=n=>{const a=ADDR[n];return "https://www.google.com/maps/dir/?api=1&travelmode=walking&destination="+a[1]+","+a[2]};
 const TOPIC="nb26-94760942652f";
 const API="https://ntfy.sh/"+TOPIC;
@@ -276,14 +300,14 @@ function ago(at){const m=Math.max(0,Math.round((Date.now()/1000-at)/60));return 
  V.forEach(([n,x,y1,y2])=>{el("line",{x1:x,y1,x2:x,y2,class:"street"},s);el("text",{x:x+6,y:n==="York"?272:22,class:"sname"},s,n)});
  el("rect",{x:196,y:62,width:148,height:84,rx:10,class:"area"},s);
  el("text",{x:204,y:78,class:"alabel"},s,"City Hall core");
- el("text",{x:204,y:91,class:"sname"},s,"12 stops, see detail map");
+ el("text",{x:204,y:91,class:"sname"},s,"skipped, start here");
+ el("rect",{x:14,y:106,width:98,height:340,rx:10,class:"area"},s);
+ el("text",{x:18,y:122,class:"alabel"},s,"Home stretch");
+ el("text",{x:18,y:134,class:"sname"},s,"see map below");
  el("rect",{x:300,y:52,width:50,height:40,rx:6,fill:"none",stroke:"var(--muted)","stroke-dasharray":"3 3"},s);
  el("text",{x:302,y:48,class:"sname"},s,"Trinity Sq");
- el("path",{d:"M176 230 L200 230 L200 150 L235 150",class:"route"},r);
- el("path",{d:"M235 150 L235 120 L320 110 L325 80 L345 120 L350 150",class:"route"},r);
- el("path",{d:"M350 150 L350 300 L262 300",class:"sub"},r);
- el("path",{d:"M255 300 L235 300 L235 360 L150 360 L140 360 L110 368 L66 404 L60 404 L60 300",class:"route"},r);
- const marks=[["LBB",176,230,"start"],["Queen stn",350,150,""],["Union",258,300,""],["Home",60,300,"home"]];
+ el("path",{d:"M250 132 L250 150 L60 150 L60 404 L30 420",class:"route"},r);
+ const marks=[["Start",250,132,""],["Home",60,300,"home"]];
  marks.forEach(([t,x,y,k])=>{el("rect",{x:x-5,y:y-5,width:10,height:10,rx:k?5:2,fill:"var(--ink)"},p);el("text",{x:x+(k==="home"?9:k==="start"?-10:8),y:y+(k==="start"?18:-8),class:"mark"},p,t)});
  STOPS.filter(x=>x.ov).forEach(x=>pin(p,x,x.ov));
 })();
@@ -299,6 +323,29 @@ function pin(parent,stop,[x,y]){
 function jump(n){const c=document.getElementById("s"+n);if(!c)return;c.scrollIntoView({block:"center"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1400)}
 
 /* Core detail map */
+let westSvg=null;
+function westMap(){
+ const fig=document.createElement("figure");fig.className="map";
+ const svg=westSvg=el("svg",{viewBox:"0 0 400 480",role:"img","aria-label":"Detail map of the walk home around Spadina"},fig);
+ const s=el("g",{},svg),r=el("g",{},svg),p=el("g",{},svg);
+ [["Queen St W",114],["Richmond",144],["King",219],["Front",323]].forEach(([n,y])=>{el("line",{x1:0,y1:y,x2:400,y2:y,class:"street"},s);el("text",{x:4,y:y-7,class:"sname"},s,n)});
+ el("line",{x1:228,y1:400,x2:400,y2:400,class:"street minor"},s);el("text",{x:330,y:393,class:"sname"},s,"Bremner");
+ el("path",{d:"M228 400 L140 408 L60 418 L0 428",class:"street minor"},s);el("text",{x:160,y:432,class:"sname"},s,"Fort York Blvd");
+ el("line",{x1:220,y1:10,x2:220,y2:470,class:"street"},s);el("text",{x:226,y:24,class:"sname"},s,"Spadina");
+ el("line",{x1:102,y1:114,x2:102,y2:219,class:"street minor"},s);el("text",{x:106,y:172,class:"sname"},s,"Brant");
+ el("line",{x1:297,y1:114,x2:297,y2:323,class:"street minor"},s);el("text",{x:301,y:206,class:"sname"},s,"Peter");
+ el("line",{x1:22,y1:418,x2:22,y2:476,class:"street minor"},s);el("text",{x:38,y:470,class:"sname"},s,"Dan Leckie Way");
+ el("rect",{x:226,y:149,width:70,height:30,rx:3,class:"bld"},s);el("text",{x:230,y:192,class:"sname"},s,"401 Richmond");
+ el("text",{x:128,y:206,class:"sname"},s,"50 Brant");
+ el("text",{x:396,y:106,class:"sname","text-anchor":"end"},s,"from Nathan Phillips Sq");
+ el("text",{x:396,y:372,class:"sname","text-anchor":"end"},s,"CN Tower (72) to the east");
+ el("path",{d:"M400 114 L220 114 L220 144 L262 144 L102 144 L102 219 L220 219 L220 400 L140 408 L60 418 L22 423 L22 456",class:"route"},r);
+ el("path",{d:"M220 114 L220 56",class:"route",opacity:".5"},r);
+ el("rect",{x:215,y:318,width:10,height:10,rx:5,fill:"var(--ink)"},p);el("text",{x:229,y:316,class:"mark"},p,"Home");
+ STOPS.filter(x=>x.w).forEach(x=>pin(p,x,x.w));
+ const cap=document.createElement("figcaption");cap.textContent="The home stretch, zoomed in. The faded dots are the optional detour to 36. Not to scale.";fig.appendChild(cap);
+ return fig;
+}
 let coreSvg=null;
 function coreMap(){
  const fig=document.createElement("figure");fig.className="map";
@@ -334,9 +381,11 @@ function coreMap(){
 /* Legs and stops */
 const main=document.getElementById("legs");
 LEGS.forEach(L=>{
- const sec=document.createElement("section");sec.className="leg";
- sec.innerHTML=`<h2>${L.id}. ${L.title}</h2><p class="how">${L.how}</p>`;
- if(L.map)sec.appendChild(coreMap());
+ let sec;
+ if(L.collapsed){sec=document.createElement("details");sec.className="skipped";sec.innerHTML=`<summary>${L.title}</summary><p class="how">${L.how}</p>`}
+ else{sec=document.createElement("section");sec.className="leg";sec.innerHTML=`<h2>${L.id}. ${L.title}</h2><p class="how">${L.how}</p>`}
+ if(L.map==="west")sec.appendChild(westMap());
+ if(L.map==="core")sec.appendChild(coreMap());
  STOPS.filter(s=>s.leg===L.id).forEach(s=>{
   const d=document.createElement("article");d.className="stop t"+s.t;d.id="s"+s.n;
   d.innerHTML=`<div class="badge">${s.n}</div><div><h3>${s.name}</h3><div class="by">${s.by}</div><p class="addr">${ADDR[s.n][0]}</p><p class="where">${s.where}</p>${s.what?`<p class="what">${s.what}</p>`:""}<div class="row"><label><input type="checkbox"> Seen it</label><button type="button" class="herebtn">We're here</button><a class="gmap" href="${gmap(s.n)}" target="_blank" rel="noopener">Directions</a><span class="who"></span></div></div>`;
@@ -347,7 +396,6 @@ LEGS.forEach(L=>{
   d.querySelector(".herebtn").addEventListener("click",()=>{if(ensureName())send({t:"here",n:s.n,by:me})});
   sec.appendChild(d);
  });
- if(L.id===6){const n=document.createElement("div");n.className="note";n.textContent="Then it's 5 minutes north up Spadina to home.";sec.appendChild(n)}
  main.appendChild(sec);
 });
 
@@ -376,15 +424,14 @@ function render(){
   });
   document.getElementById("hereText").textContent=state.here?(nameOf(state.here.n)+" ("+state.here.by+", "+ago(state.here.at)+")"):"Nobody has checked in yet.";
   document.getElementById("meetText").textContent=state.meet?(state.meet.text+" ("+state.meet.by+")"):"Not set.";
-  document.getElementById("prog").textContent=Object.keys(state.seen).length+" of "+STOPS.length+" seen";
+  const act=STOPS.filter(x=>x.leg!==9);document.getElementById("prog").textContent=act.filter(x=>state.seen[x.n]).length+" of "+act.length+" seen";
 }
 render();
 
 function tick(){
  const d=new Date(),m=d.getMinutes(),left=60-m;let t;
- if(m<10)t=`<b>The band (06) is on now</b>, for ${10-m} more min`;
- else if(m<30)t=`CN Tower (72) lit for ${30-m} more min. Band in <b>${left} min</b>`;
- else t=`Next band (06) and CN Tower in <b>${left} min</b>`;
+ if(m<30)t=`<b>CN Tower (72) is lit now</b>, ${30-m} more min`;
+ else t=`CN Tower (72) lights up in <b>${left} min</b>`;
  document.getElementById("clockText").innerHTML=t;
  render();
 }
@@ -397,6 +444,7 @@ function lerp(t,v){for(let i=0;i<t.length-1;i++){const[a,x]=t[i],[b,y]=t[i+1];if
 // [grid metres, map px]: streets Spadina/University/York/Bay/Yonge and Bremner/Front/King/Queen/Dundas (core map: Hagerman/Albert)
 const MAPS=[
  {svg:document.querySelector("#mapOverview svg"),W:400,H:470,X:[[-917,60],[-75,200],[43,235],[290,275],[521,350]],Y:[[-790,360],[-570,300],[-225,230],[125,150],[590,30]]},
+ {svg:westSvg,W:400,H:480,X:[[-1400,-10.4],[0,661.6]],Y:[[-1100,481.9],[400,31.9]]},
  {svg:coreSvg,W:400,H:290,X:[[-75,22],[43,120],[290,250],[385,378],[521,560]],Y:[[-225,492],[125,240],[261,142],[420,30],[590,-89]]}
 ];
 const locText=document.getElementById("locText"),locBtn=document.getElementById("locBtn");
